@@ -1,9 +1,10 @@
+import type React from 'react';
 import clsx from 'clsx';
 
 import type { ToastItem, ToastTone } from './ToastContext';
 import styles from './Toast.module.css';
 
-const icons: Record<ToastTone, JSX.Element> = {
+const icons: Record<ToastTone, React.JSX.Element> = {
   success: (
     <svg
       width="18"

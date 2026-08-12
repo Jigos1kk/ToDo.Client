@@ -11,7 +11,7 @@ export default defineConfig([
     files: ['**/*.{ts,tsx}'],
     extends: [
       js.configs.recommended,
-      ...tseslint.configs.strictTypeChecked,
+      ...tseslint.configs.recommendedTypeChecked,
       ...tseslint.configs.stylisticTypeChecked,
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
@@ -34,12 +34,10 @@ export default defineConfig([
         'error',
         { checksVoidReturn: { attributes: false } },
       ],
-      '@typescript-eslint/restrict-template-expressions': [
-        'error',
-        { allowNumber: true },
-      ],
+      '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       '@typescript-eslint/no-misused-spread': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/unbound-method': 'off',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },

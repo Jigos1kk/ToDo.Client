@@ -8,6 +8,7 @@ import { RegisterPage } from '@/app/pages/auth/RegisterPage';
 import { ResetPasswordPage } from '@/app/pages/auth/ResetPasswordPage';
 import { NotFoundPage } from '@/app/pages/NotFoundPage';
 import { ProfilePage } from '@/app/pages/profile/ProfilePage';
+import { ProjectDetailsPage } from '@/app/pages/tasks/ProjectDetailsPage';
 import { TaskDetailsPage } from '@/app/pages/tasks/TaskDetailsPage';
 import { TasksPage } from '@/app/pages/tasks/TasksPage';
 
@@ -67,6 +68,7 @@ export function AppRouter() {
         }
       >
         <Route path="/" element={<TasksPage />} />
+        <Route path="/projects/:projectId" element={<ProjectDetailsPage />} />
         <Route path="/tasks/:taskId" element={<TaskDetailsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>

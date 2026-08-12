@@ -39,9 +39,7 @@ export const taskApi = {
 
   /** Получить подзадачи задачи. */
   async getSubtasks(taskId: string): Promise<TaskItem[]> {
-    const { data } = await httpClient.get<TaskItem[]>(
-      `${env.coreApiUrl}/tasks/${taskId}/subtasks`,
-    );
+    const { data } = await httpClient.get<TaskItem[]>(`${env.coreApiUrl}/tasks/${taskId}/subtasks`);
     return data;
   },
 

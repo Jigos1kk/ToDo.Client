@@ -112,7 +112,11 @@ httpClient.interceptors.response.use(
     } catch (refreshError) {
       tokenStorage.clear();
       onUnauthorizedListener?.();
-      return Promise.reject(refreshError instanceof Error ? refreshError : new ApiError('Не удалось обновить сессию.', 401));
+      return Promise.reject(
+        refreshError instanceof Error
+          ? refreshError
+          : new ApiError('Не удалось обновить сессию.', 401),
+      );
     }
   },
 );

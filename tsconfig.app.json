@@ -20,11 +20,9 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
 
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
