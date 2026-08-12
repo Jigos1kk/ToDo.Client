@@ -37,8 +37,9 @@ npm run dev
 
 ## Дизайн-система
 
-- Адаптивная сетка (max-width: 1080px)
-- Светлая и тёмная темы (CSS custom properties, тоггл в шапке)
+- Тёмная тема в стиле Linear / Notion Dark
+- Сайдбар 240px с навигацией по проектам
+- Канбан-доска с цветокодированными колонками (indigo / teal)
 - Анимации: fade-in, scale-in, slide-in-right, shimmer (скелетоны)
 - Доступность: aria-атрибуты, focus management, reduced-motion
 - Логотип: SVG inline, favicon через data-URI
@@ -63,7 +64,28 @@ npm run dev
 - **Vite 8** — сборка, HMR, прокси
 - **@tanstack/react-query** — серверный стейт, кеш, optimistic updates
 - **React Hook Form** + Zod — валидация форм
-- **Zustand** — auth store, theme store
+- **Zustand** — auth store
 - **Axios** — HTTP-клиент с auto-refresh токенов
 - **CSS Modules** — изолированные стили на CSS custom properties
 - **ESLint** + **Prettier** — линтинг и форматирование
+
+## Docker
+
+```bash
+# Сборка
+docker build -t todo-ui .
+
+# Запуск (проксирует API на todo-auth:80 и todo-core:80)
+docker run -p 3000:80 todo-ui
+```
+
+### Docker Compose (вся экосистема)
+
+```bash
+# Из корня проекта (где docker-compose.yml)
+docker compose up -d
+
+# Фронтенд → http://localhost:3000
+# Auth    → http://localhost:5057
+# Core    → http://localhost:5056
+```
