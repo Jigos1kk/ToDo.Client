@@ -1,0 +1,56 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.select {
+  width: 100%;
+  appearance: none;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  min-height: 40px;
+  padding: 0 var(--space-6) 0 var(--space-3);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.select:focus-visible {
+  border-color: var(--color-primary-500);
+  box-shadow: var(--shadow-focus);
+}
+
+.control.invalid .select {
+  border-color: var(--color-danger);
+}
+
+.chevron {
+  position: absolute;
+  right: var(--space-3);
+  pointer-events: none;
+  color: var(--text-muted);
+}
+
+.error {
+  color: var(--color-danger);
+  font-size: var(--font-size-xs);
+}
+
+.hint {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+}
