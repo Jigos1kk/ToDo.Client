@@ -14,16 +14,28 @@ interface ModalProps {
 /** Диалог поверх страницы: Esc и клик по подложке закрывают, фокус уходит внутрь. */
 export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  // Синхронизируем onClose в эффекте, а не во время рендера
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     if (!isOpen) return;
 
     const previouslyFocused = document.activeElement as HTMLElement | null;
-    dialogRef.current?.focus();
+
+    // Фокусируем диалог только при первом открытии, не при каждом ререндере
+    const raf = requestAnimationFrame(() => {
+      dialogRef.current?.focus();
+    });
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-      // Простой focus trap: держим Tab внутри диалога
+      if (event.key === 'Escape') {
+        onCloseRef.current();
+        return;
+      }
       if (event.key === 'Tab' && dialogRef.current) {
         const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
           'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
@@ -44,11 +56,12 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
     document.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
     return () => {
+      cancelAnimationFrame(raf);
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
       previouslyFocused?.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -56,7 +69,7 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
     <div
       className={styles.overlay}
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (event.target === event.currentTarget) onCloseRef.current();
       }}
     >
       <div
@@ -69,7 +82,12 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
       >
         <div className={styles.header}>
           <h2 className={styles.title}>{title}</h2>
-          <button type="button" onClick={onClose} aria-label="Закрыть" className={styles.close}>
+          <button
+            type="button"
+            onClick={() => onCloseRef.current()}
+            aria-label="Закрыть"
+            className={styles.close}
+          >
             <svg
               width="18"
               height="18"

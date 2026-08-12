@@ -27,11 +27,18 @@ import { formatDate, formatDateTime } from '@/shared/lib/formatDate';
 
 import styles from './ProjectDetailsPage.module.css';
 
-/* ----- Zod-схемы ----- */
+const TrashIcon = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+  </svg>
+);
 
-
-
-/* ----- Компоненты ----- */
+const ChevronLeft = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -40,6 +47,64 @@ function formatFileSize(bytes: number): string {
 }
 
 type TabKey = 'tasks' | 'files' | 'memberships';
+
+interface CreateTaskForm {
+  title: string;
+  description: string;
+  dueDate: string;
+}
+
+function TaskCard({
+  task,
+  column,
+  onToggle,
+  onDelete,
+}: {
+  task: TaskItem;
+  column: 'active' | 'completed';
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <div className={styles.taskCard}>
+      <div className={`${styles.taskCardBorder} ${column === 'active' ? styles.taskCardBorderActive : styles.taskCardBorderCompleted}`} />
+      <div className={styles.taskCardBody}>
+        <div className={styles.taskCardRow}>
+          <input
+            type="checkbox"
+            className={styles.taskCheckbox}
+            checked={task.isCompleted}
+            onChange={onToggle}
+            aria-label={`Отметить задачу «${task.title}» как ${task.isCompleted ? 'невыполненную' : 'выполненную'}`}
+          />
+          <Link to={`/tasks/${task.id}`} className={`${styles.taskTitle} ${task.isCompleted ? styles.taskTitleCompleted : ''}`}>
+            {task.title}
+          </Link>
+        </div>
+        {task.description && <p className={styles.taskDesc}>{task.description}</p>}
+        <div className={styles.taskMeta}>
+          {task.dueDate && (
+            <Badge tone={new Date(task.dueDate) < new Date() ? 'danger' : 'neutral'}>
+              {formatDate(task.dueDate)}
+            </Badge>
+          )}
+          <button
+            type="button"
+            className={styles.taskDeleteBtn}
+            aria-label={`Удалить задачу «${task.title}»`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete();
+            }}
+          >
+            {TrashIcon}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function ProjectDetailsPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -111,13 +176,7 @@ export function ProjectDetailsPage() {
     enabled: !!projectId,
   });
 
-  interface CreateTaskForm {
-  title: string;
-  description: string;
-  dueDate: string;
-}
-
-const [createForm, setCreateForm] = useState<CreateTaskForm>({
+  const [createForm, setCreateForm] = useState<CreateTaskForm>({
     title: '',
     description: '',
     dueDate: '',
@@ -167,6 +226,17 @@ const [createForm, setCreateForm] = useState<CreateTaskForm>({
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId!] });
+    },
+  });
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: taskApi.remove,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', projectId!] });
+      showToast({ tone: 'success', title: 'Задача удалена' });
+    },
+    onError: (err) => {
+      showToast({ tone: 'error', title: 'Ошибка', description: getApiErrorMessage(err) });
     },
   });
 
@@ -314,22 +384,11 @@ const [createForm, setCreateForm] = useState<CreateTaskForm>({
   if (projectError) {
     return (
       <div className={styles.container}>
-        <div role="alert" style={{ color: 'var(--color-danger)' }}>
+        <div role="alert" style={{ color: 'var(--color-danger)', marginBottom: 'var(--space-4)' }}>
           {getApiErrorMessage(projectErr)}
         </div>
         <Link to="/" className={styles.backBtn}>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
+          {ChevronLeft}
           Назад к проектам
         </Link>
       </div>
@@ -340,7 +399,9 @@ const [createForm, setCreateForm] = useState<CreateTaskForm>({
     return (
       <div className={styles.container}>
         <Skeleton height={28} width="60%" />
-        <Skeleton height={16} width="40%" className={styles.skeletonLine} />
+        <div style={{ marginTop: 'var(--space-2)' }}>
+          <Skeleton height={16} width="40%" />
+        </div>
         <div style={{ marginTop: 'var(--space-5)' }}>
           <Card className={styles.skeletonCard}>
             <Skeleton height={20} width="50%" />
@@ -354,25 +415,17 @@ const [createForm, setCreateForm] = useState<CreateTaskForm>({
 
   if (!project) return null;
 
+  const activeTasks = tasks?.filter((t) => !t.isCompleted) ?? [];
+  const completedTasks = tasks?.filter((t) => t.isCompleted) ?? [];
+
   return (
     <div className={styles.container}>
       <Link to="/" className={styles.backBtn}>
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
+        {ChevronLeft}
         Назад к проектам
       </Link>
 
-      <div className={`${styles.pageHeader} animate-fade-in-up`}>
+      <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>{project.name}</h1>
           {project.description && <p className={styles.pageSubtitle}>{project.description}</p>}
@@ -422,62 +475,80 @@ const [createForm, setCreateForm] = useState<CreateTaskForm>({
         )}
       </div>
 
-      {/* Таб: Задачи */}
+      {/* Таб: Канбан-доска задач */}
       {activeTab === 'tasks' && (
-        <div className={styles.animateIn}>
-          <div style={{ marginBottom: 'var(--space-4)' }}>
-            <Button onClick={() => setCreateTaskOpen(true)}>Создать задачу</Button>
-          </div>
-
+        <div className={styles.kanban}>
           {tasksLoading && (
-            <div className={styles.taskList}>
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i} className={styles.skeletonCard}>
-                  <Skeleton height={20} width="60%" />
-                  <Skeleton height={14} />
-                  <Skeleton height={12} width="30%" />
-                </Card>
-              ))}
+            <div className={styles.kanbanColumns}>
+              <div className={styles.kanbanColumn}>
+                <Skeleton height={24} width="40%" />
+                <Skeleton height={80} />
+                <Skeleton height={80} />
+              </div>
+              <div className={styles.kanbanColumn}>
+                <Skeleton height={24} width="40%" />
+                <Skeleton height={80} />
+              </div>
             </div>
           )}
 
-          {!tasksLoading && tasks && tasks.length > 0 && (
-            <div className={styles.taskList}>
-              {tasks.map((task) => (
-                <Card key={task.id} className={styles.taskCard}>
-                  <div className={styles.taskRow}>
-                    <input
-                      type="checkbox"
-                      className={styles.taskCheckbox}
-                      checked={task.isCompleted}
-                      onChange={() =>
-                        toggleTaskMutation.mutate({
-                          id: task.id,
-                          isCompleted: !task.isCompleted,
-                        })
+          {!tasksLoading && (
+            <div className={styles.kanbanColumns}>
+              {/* Активные */}
+              <div className={styles.kanbanColumn}>
+                <div className={`${styles.columnHeader} ${styles.columnHeaderActive}`}>
+                  <span>Активные</span>
+                  <span className={styles.columnCount}>{activeTasks.length}</span>
+                </div>
+                <div className={styles.columnBody}>
+                  {activeTasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      column="active"
+                      onToggle={() =>
+                        toggleTaskMutation.mutate({ id: task.id, isCompleted: true })
                       }
-                      aria-label={`Отметить задачу «${task.title}» как ${task.isCompleted ? 'невыполненную' : 'выполненную'}`}
+                      onDelete={() => deleteTaskMutation.mutate(task.id)}
                     />
-                    <div className={styles.taskContent}>
-                      <Link
-                        to={`/tasks/${task.id}`}
-                        className={`${styles.taskTitle} ${task.isCompleted ? styles.taskTitleCompleted : ''}`}
-                      >
-                        {task.title}
-                      </Link>
-                      {task.description && <p className={styles.taskDesc}>{task.description}</p>}
-                      <div className={styles.taskMeta}>
-                        {task.dueDate && (
-                          <Badge tone={new Date(task.dueDate) < new Date() ? 'danger' : 'neutral'}>
-                            {formatDate(task.dueDate)}
-                          </Badge>
-                        )}
-                        <span className={styles.taskDate}>{formatDate(task.createdAt)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+                  ))}
+                  <button
+                    type="button"
+                    className={styles.addTaskBtn}
+                    onClick={() => setCreateTaskOpen(true)}
+                  >
+                    + Добавить задачу
+                  </button>
+                </div>
+              </div>
+
+              {/* Завершённые */}
+              <div className={styles.kanbanColumn}>
+                <div className={`${styles.columnHeader} ${styles.columnHeaderCompleted}`}>
+                  <span>Завершённые</span>
+                  <span className={styles.columnCount}>{completedTasks.length}</span>
+                </div>
+                <div className={styles.columnBody}>
+                  {completedTasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      column="completed"
+                      onToggle={() =>
+                        toggleTaskMutation.mutate({ id: task.id, isCompleted: false })
+                      }
+                      onDelete={() => deleteTaskMutation.mutate(task.id)}
+                    />
+                  ))}
+                  <button
+                    type="button"
+                    className={styles.addTaskBtn}
+                    onClick={() => setCreateTaskOpen(true)}
+                  >
+                    + Добавить задачу
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -527,16 +598,7 @@ const [createForm, setCreateForm] = useState<CreateTaskForm>({
                 <div key={f.id} className={styles.fileItem}>
                   <div className={styles.fileInfo}>
                     <span className={styles.fileIcon} aria-hidden>
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" />
                         <polyline points="14 2 14 8 20 8" />
                       </svg>
@@ -555,16 +617,7 @@ const [createForm, setCreateForm] = useState<CreateTaskForm>({
                       aria-label={`Скачать ${f.fileName}`}
                       onClick={() => downloadMutation.mutate(f.id)}
                     >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                         <polyline points="7 10 12 15 17 10" />
                         <line x1="12" y1="15" x2="12" y2="3" />
@@ -577,16 +630,7 @@ const [createForm, setCreateForm] = useState<CreateTaskForm>({
                         aria-label={`Удалить ${f.fileName}`}
                         onClick={() => deleteFileMutation.mutate(f.id)}
                       >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="3 6 5 6 21 6" />
                           <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
                         </svg>
@@ -660,7 +704,6 @@ const [createForm, setCreateForm] = useState<CreateTaskForm>({
             placeholder="Введите название задачи"
             value={createForm.title}
             onChange={(e) => setCreateForm((f) => ({ ...f, title: e.target.value }))}
-            error={createForm.title ? undefined : undefined}
           />
           <Textarea
             label="Описание"

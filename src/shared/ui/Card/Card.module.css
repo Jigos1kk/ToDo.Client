@@ -2,16 +2,10 @@
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  transition:
-    box-shadow var(--transition-base),
-    transform var(--transition-base),
-    border-color var(--transition-base);
 }
 
 .interactive:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  background: var(--bg-surface-raised);
   border-color: var(--border-strong);
 }
 

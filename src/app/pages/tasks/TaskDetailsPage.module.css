@@ -1,7 +1,5 @@
 .container {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: var(--space-5) var(--space-4);
+  animation: fade-in-up 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .backBtn {
@@ -12,7 +10,6 @@
   text-decoration: none;
   font-size: var(--font-size-sm);
   margin-bottom: var(--space-4);
-  transition: color var(--transition-fast);
 }
 
 .backBtn:hover {
@@ -109,6 +106,10 @@
   font-size: var(--font-size-sm);
 }
 
+.subtaskItem:hover {
+  background: var(--bg-subtle);
+}
+
 .subtaskCheckbox {
   flex-shrink: 0;
   width: 18px;
@@ -153,6 +154,10 @@
   font-size: var(--font-size-sm);
 }
 
+.correctionItem:hover {
+  background: var(--bg-subtle);
+}
+
 .correctionHeader {
   display: flex;
   justify-content: space-between;
@@ -191,6 +196,10 @@
   padding: var(--space-3);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
+}
+
+.fileItem:hover {
+  background: var(--bg-subtle);
 }
 
 .fileInfo {
@@ -234,9 +243,6 @@
   border-radius: var(--radius-sm);
   color: var(--text-muted);
   cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
 }
 
 .iconBtn:hover {

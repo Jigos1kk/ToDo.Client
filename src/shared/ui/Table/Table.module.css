@@ -4,7 +4,6 @@
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
 }
 
 .table {
@@ -33,10 +32,6 @@
 
 .table tbody tr:last-child td {
   border-bottom: none;
-}
-
-.row {
-  transition: background-color var(--transition-fast);
 }
 
 .row:hover {

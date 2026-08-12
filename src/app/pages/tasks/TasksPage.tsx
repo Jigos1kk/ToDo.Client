@@ -11,7 +11,6 @@ import { useAuthStore, useUser } from '@/entities/user';
 import {
   Badge,
   Button,
-  Card,
   EmptyState,
   Input,
   Modal,
@@ -31,13 +30,23 @@ const createSchema = z.object({
 
 type CreateForm = z.infer<typeof createSchema>;
 
+const TrashIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+    <line x1="10" y1="11" x2="10" y2="17" />
+    <line x1="14" y1="11" x2="14" y2="17" />
+  </svg>
+);
+
 function ProjectSkeleton() {
   return (
-    <Card className={styles.skeletonCard}>
+    <div className={styles.skeletonCard}>
       <Skeleton height={22} width="70%" />
       <Skeleton height={14} />
+      <Skeleton height={14} />
       <Skeleton height={12} width="40%" />
-    </Card>
+    </div>
   );
 }
 
@@ -127,39 +136,23 @@ export function TasksPage() {
           projects.length > 0 &&
           projects.map((project) => (
             <Link to={`/projects/${project.id}`} key={project.id} className={styles.card}>
-              <Card interactive>
+              <div className={styles.cardInner}>
                 <div className={styles.cardTop}>
                   <h3 className={styles.cardTitle}>{project.name}</h3>
-                  <div className={styles.cardActions}>
-                    {canDelete(project) && (
-                      <button
-                        type="button"
-                        className={styles.deleteBtn}
-                        aria-label={`Удалить проект «${project.name}»`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleDelete(project);
-                        }}
-                      >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="3 6 5 6 21 6" />
-                          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                          <line x1="10" y1="11" x2="10" y2="17" />
-                          <line x1="14" y1="11" x2="14" y2="17" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
+                  {canDelete(project) && (
+                    <button
+                      type="button"
+                      className={styles.deleteBtn}
+                      aria-label={`Удалить проект «${project.name}»`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleDelete(project);
+                      }}
+                    >
+                      {TrashIcon}
+                    </button>
+                  )}
                 </div>
                 {project.description && <p className={styles.cardDesc}>{project.description}</p>}
                 <div className={styles.cardFooter}>
@@ -168,7 +161,7 @@ export function TasksPage() {
                     {isOwner(project) ? 'Создатель' : 'Участник'}
                   </Badge>
                 </div>
-              </Card>
+              </div>
             </Link>
           ))}
 

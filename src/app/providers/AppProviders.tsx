@@ -2,7 +2,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, type ReactNode } from 'react';
 
 import { useAuthStore } from '@/entities/user';
-import { useApplyTheme } from '@/features/theme/model/themeStore';
 import { ToastProvider } from '@/shared/ui';
 
 const queryClient = new QueryClient({
@@ -18,7 +17,6 @@ const queryClient = new QueryClient({
 /** Все провайдеры приложения + восстановление сессии при старте. */
 export function AppProviders({ children }: { children: ReactNode }) {
   const bootstrap = useAuthStore((state) => state.bootstrap);
-  useApplyTheme();
 
   useEffect(() => {
     void bootstrap();

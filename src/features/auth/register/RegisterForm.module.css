@@ -35,13 +35,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--color-primary-100);
-  color: var(--color-primary-600);
-}
-
-[data-theme='dark'] .successIcon {
-  background: rgb(109 92 255 / 0.18);
-  color: var(--color-primary-300);
+  background: rgba(108, 92, 231, 0.15);
+  color: var(--color-primary-400);
 }
 
 .successTitle {
